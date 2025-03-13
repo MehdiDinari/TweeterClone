@@ -19,26 +19,27 @@ from django.contrib import admin
 from django.urls import path, re_path, include # url()
 from django.views.generic import TemplateView
 
-from tweets.views import (
-    home_view, 
-    tweet_action_view,
-    tweet_delete_view,
-    tweet_detail_view, 
-    tweet_list_view,
-    tweet_create_view,
+from accounts.views import (
+    login_view,
+    logout_view,
+    register_view,
 )
+
 from tweets.views import (
-    local_tweets_list_view,
-    local_tweets_detail_view,
-    local_tweets_profile_view,
+    tweets_list_view,
+    tweets_detail_view,
 )
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', local_tweets_list_view),
-    path('<int:tweet_id>', local_tweets_detail_view),
-    path('profile/<str:username>', local_tweets_profile_view),
-    path('api/tweets/', include('tweets.urls'))
+    path('', tweets_list_view),
+    path('login/', login_view),
+    path('logout/', logout_view),
+    path('register/', register_view),
+    path('<int:tweet_id>', tweets_detail_view),
+    re_path(r'profiles?/', include('profiles.urls')),
+    path('api/tweets/', include('tweets.api.urls')),
+    re_path(r'api/profiles?/', include('profiles.api.urls')),
 ]
 
 if settings.DEBUG:
