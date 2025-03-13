@@ -27,14 +27,17 @@ from tweets.views import (
     tweet_list_view,
     tweet_create_view,
 )
+from tweets.views import (
+    local_tweets_list_view,
+    local_tweets_detail_view,
+    local_tweets_profile_view,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', home_view),
-     path('react/', TemplateView.as_view(template_name='react.html')),
-    path('create-tweet/', tweet_create_view),  # Added trailing slash
-    path('tweets/', tweet_list_view),  # Added trailing slash
-    path('tweets/<int:tweet_id>/', tweet_detail_view),  # Consider adding here too
+    path('', local_tweets_list_view),
+    path('<int:tweet_id>', local_tweets_detail_view),
+    path('profile/<str:username>', local_tweets_profile_view),
     path('api/tweets/', include('tweets.urls'))
 ]
 

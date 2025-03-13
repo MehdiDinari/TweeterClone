@@ -25,12 +25,23 @@ def home_view(request, *args, **kwargs):
         username = request.user.username
     return render(request, "pages/home.html", context={"username": username}, status=200)
 
+def local_tweets_list_view(request, *args, **kwargs):
+    return render(request, "tweets/list.html")
+
+def local_tweets_detail_view(request, tweet_id, *args, **kwargs):
+    return render(request, "tweets/detail.html", context={"tweet_id": tweet_id})
+
+def local_tweets_profile_view(request, username, *args, **kwargs):
+    return render(request, "tweets/profile.html", context={"profile_username": username})
+
+
+
 
 @api_view(['POST']) # http method the client == POST
 # @authentication_classes([SessionAuthentication, MyCustomAuth])
 @permission_classes([IsAuthenticated]) # REST API course
 def tweet_create_view(request, *args, **kwargs):
-    serializer = TweetCreateSerializer(data=request.POST)
+    serializer = TweetCreateSerializer(data=request.data)
     if serializer.is_valid(raise_exception=True):
         serializer.save(user=request.user)
         return Response(serializer.data, status=201)
@@ -97,8 +108,11 @@ def tweet_action_view(request, *args, **kwargs):
 @api_view(['GET'])
 def tweet_list_view(request, *args, **kwargs):
     qs = tweet.objects.all()
+    username = request.GET.get('username') # ?username=Justin
+    if username != None:
+        qs = qs.filter(user__username__iexact=username)
     serializer = TweetSerializer(qs, many=True)
-    return Response(serializer.data, status=200)
+    return Response( serializer.data, status=200)
 
 
 
