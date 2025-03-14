@@ -111,7 +111,23 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
 
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'http_x_requested_with',  # Add this specific header
+]
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
@@ -155,8 +171,22 @@ if DEBUG:
     # DEFAULT_AUTHENTICATION_CLASSES += [
     #     'tweetme2.rest_api.dev.DevAuthentication'
     # ]
+# Dans votre settings.py
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    # Ajoutez ici les autres domaines autorisés
+]
+
+# Configuration REST Framework
 REST_FRAMEWORK = {
-    
-    'DEFAULT_AUTHENTICATION_CLASSES': DEFAULT_AUTHENTICATION_CLASSES,
-    'DEFAULT_RENDERER_CLASSES': DEFAULT_RENDERER_CLASSES
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        # Autres classes d'authentification si nécessaire
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        # Autres classes de permission si nécessaire
+    ],
 }

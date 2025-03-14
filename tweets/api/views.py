@@ -6,6 +6,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from ..forms import TweetForm
@@ -19,7 +20,7 @@ from ..serializers import (
 ALLOWED_HOSTS = settings.ALLOWED_HOSTS
 
 @api_view(['POST']) # http method the client == POST
-# @authentication_classes([SessionAuthentication, MyCustomAuth])
+@authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated]) # REST API course
 def tweet_create_view(request, *args, **kwargs):
     serializer = TweetCreateSerializer(data=request.data)
@@ -38,6 +39,7 @@ def tweet_detail_view(request, tweet_id, *args, **kwargs):
     return Response(serializer.data, status=200)
 
 @api_view(['DELETE', 'POST'])
+@authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def tweet_delete_view(request, tweet_id, *args, **kwargs):
     qs = tweet.objects.filter(id=tweet_id)
@@ -51,6 +53,7 @@ def tweet_delete_view(request, tweet_id, *args, **kwargs):
     return Response({"message": "Tweet removed"}, status=200)
 
 @api_view(['POST'])
+@authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def tweet_action_view(request, *args, **kwargs):
     '''
@@ -86,15 +89,29 @@ def tweet_action_view(request, *args, **kwargs):
     return Response({}, status=200)
 
 
+def get_paginated_queryset_response(qs, request):
+    paginator = PageNumberPagination()
+    paginator.page_size = 20
+    paginated_qs = paginator.paginate_queryset(qs, request)
+    serializer = TweetSerializer(paginated_qs, many=True)
+    return paginator.get_paginated_response(serializer.data) # Response( serializer.data, status=200)
+
+
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def tweet_feed_view(request, *args, **kwargs):
+    user = request.user
+    qs = tweet.objects.feed(user)
+    return get_paginated_queryset_response(qs, request)
+
 @api_view(['GET'])
 def tweet_list_view(request, *args, **kwargs):
     qs = tweet.objects.all()
     username = request.GET.get('username') # ?username=Justin
     if username != None:
-        qs = qs.filter(user__username__iexact=username)
-    serializer = TweetSerializer(qs, many=True)
-    return Response( serializer.data, status=200)
-
+        qs = qs.by_username(username)
+    return get_paginated_queryset_response(qs, request)
 
 
 def tweet_create_view_pure_django(request, *args, **kwargs):
